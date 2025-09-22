@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Facebook UserId_PostId LilSic</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="shortcut icon" href="/images/thien.gif" type="image/x-icon">
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="">
+      <h2>Nhập danh sách URL Facebook posts (mỗi URL 1 dòng):</h2>
+      <textarea
+        id="urls"
+        rows="10"
+        cols="60"
+        placeholder="https://www.facebook.com/user/posts/12345"
+      > https://www.facebook.com/diduong.012/posts/82139801248923</textarea
+      ><br />
+    </div>
+
+    <button id="btn">1 phát là 10k</button>
+
+    <h3>Kết quả:</h3>
+    <pre id="resultarea"></pre>
+    <div>
+      <ol id="resultList"></ol>
+    </div>
+
+    <script src="/js/app.js"></script>
+  </body>
+</html>
