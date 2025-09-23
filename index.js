@@ -1,15 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const puppeteer = require('puppeteer');
+const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// Middleware
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// Regex patterns để tìm userId numeric
+// Các regex tìm userId numeric trong HTML
 const PATTERNS = [
   /"entity_id":"(\d+)"/g,
   /"profile_id":"(\d+)"/g,
@@ -30,16 +30,16 @@ function findAllIds(text) {
 }
 
 function extractPostId(url) {
-  const match = url.match(/\/posts\/(\d+)/);
-  return match ? match[1] : null;
+  const match = url.match(/\/(posts|videos)\/(\d+)/);
+  return match ? match[2] : null;
 }
 
 function extractProfileUrl(postUrl) {
-  const match = postUrl.match(/(https:\/\/www\.facebook\.com\/[^\/]+)(\/posts\/\d+)?/);
+  const match = postUrl.match(/(https:\/\/www\.facebook\.com\/[^\/]+)(\/(posts|videos)\/\d+)?/);
   return match ? match[1] : null;
 }
 
-// Chặn tài nguyên không cần thiết để tăng tốc trang
+// Tạo trang puppeteer với chặn tài nguyên không cần thiết để tăng tốc
 async function setupPage(browser) {
   const page = await browser.newPage();
   await page.setRequestInterception(true);
@@ -56,6 +56,7 @@ async function setupPage(browser) {
   return page;
 }
 
+// Lấy userId từ trang profile Facebook bằng Puppeteer
 async function getUserIdFromProfile(url, browser) {
   let page;
   try {
@@ -86,7 +87,7 @@ async function getUserIdFromProfile(url, browser) {
   }
 }
 
-// Xử lý concurrency 5 tabs chạy song song
+// Xử lý concurrency với worker giới hạn số tabs Puppeteer chạy song song
 async function processUrls(urls, browser, concurrency = 5) {
   const results = [];
   let index = 0;
@@ -121,6 +122,7 @@ let browserInstance = null;
 (async () => {
   browserInstance = await puppeteer.launch({
     headless: true,
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   });
 
@@ -133,22 +135,21 @@ let browserInstance = null;
       const results = await processUrls(urls, browserInstance, 5);
       res.json(results);
     } catch (err) {
+      console.error(err);
       res.status(500).json({ error: 'Lỗi server khi xử lý' });
     }
   });
 
-  // Phục vụ file tĩnh từ thư mục public
-const path = require('path');
-app.use('/images', express.static(path.join(__dirname, 'public/images')));
+  app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
-  app.listen(port, () => {
-    console.log(`Server chạy trên http://localhost:${port}`);
+  const host = '0.0.0.0';
+  app.listen(port, host, () => {
+    console.log(`Server đang chạy trên http://${host}:${port}`);
   });
 })();
 
-// Đóng browser khi Node.js dừng
 process.on('exit', () => {
   if (browserInstance) browserInstance.close();
 });
-process.on('SIGINT', () => process.exit());
+process.on('SIGINT', () => process.exit()); 
 process.on('SIGTERM', () => process.exit());
