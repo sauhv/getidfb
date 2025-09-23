@@ -103,10 +103,21 @@ async function processUrls(urls, browser, concurrency = 5) {
       const postUrl = urls[i];
       const postId = extractPostId(postUrl);
       const profileUrl = extractProfileUrl(postUrl);
+
       if (!profileUrl || !postId) {
         results[i] = { url: postUrl, error: 'Không tách được profile hoặc postId' };
         continue;
       }
+
+      // Kiểm tra dạng URL numeric đơn giản chạy thẳng không cần Puppeteer
+      const numericIdMatch = postUrl.match(/^https?:\/\/www\.facebook\.com\/(\d+)\/posts\/(\d+)\/?$/);
+      if (numericIdMatch) {
+        const userId = numericIdMatch[1];
+        const postId = numericIdMatch[2];
+        results[i] = { url: postUrl, result: `${userId}_${postId}` };
+        continue; // Bỏ qua Puppeteer
+      }
+
       const userId = await getUserIdFromProfile(profileUrl, browser);
       if (userId) {
         results[i] = { url: postUrl, result: `${userId}_${postId}` };
@@ -122,6 +133,7 @@ async function processUrls(urls, browser, concurrency = 5) {
   await Promise.all(workers);
   return results;
 }
+
 
 let browserInstance = null;
 
