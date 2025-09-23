@@ -9,6 +9,12 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
+// Thêm route kiểm tra health cho Render
+app.get('/', (req, res) => {
+  res.send('✅ Server is running on Render');
+});
+
+
 // Các regex tìm userId numeric trong HTML
 const PATTERNS = [
   /"entity_id":"(\d+)"/g,

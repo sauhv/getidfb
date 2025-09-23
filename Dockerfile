@@ -3,32 +3,41 @@ FROM node:18-slim
 # Bỏ download Chromium mặc định của Puppeteer
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
-# Cài đặt các gói hệ thống cần thiết cho Puppeteer & Chrome
+# Cài đặt gói hệ thống + Chromium
 RUN apt-get update && apt-get install -y \
-  gnupg wget ca-certificates fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 \
-  libatk1.0-0 libcups2 libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libx11-xcb1 libxcomposite1 \
-  libxdamage1 libxrandr2 xdg-utils --no-install-recommends
+  chromium \
+  fonts-liberation \
+  libasound2 \
+  libatk-bridge2.0-0 \
+  libatk1.0-0 \
+  libcups2 \
+  libdbus-1-3 \
+  libgdk-pixbuf2.0-0 \
+  libnspr4 \
+  libnss3 \
+  libx11-xcb1 \
+  libxcomposite1 \
+  libxdamage1 \
+  libxrandr2 \
+  xdg-utils \
+  --no-install-recommends && \
+  rm -rf /var/lib/apt/lists/*
 
-# Thêm kho lưu trữ Google Chrome stable và cài Chrome stable
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-  sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' && \
-  apt-get update && apt-get install -y google-chrome-stable && rm -rf /var/lib/apt/lists/*
-
-# Thư mục làm việc trong container
+# Thư mục làm việc
 WORKDIR /app
 
-# Copy package và cài dependencies
+# Cài dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
-# Copy toàn bộ source code
+# Copy toàn bộ source
 COPY . .
 
-# Expose port ứng dụng
-EXPOSE 3000
+# Expose, Render sẽ override PORT = 10000
+EXPOSE 10000
 
-# Thiết lập biến môi trường cho Puppeteer dùng Chrome stable
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+# Puppeteer dùng Chromium trong container
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
-# Khởi chạy ứng dụng
+# Start app
 CMD ["node", "index.js"]
