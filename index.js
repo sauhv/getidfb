@@ -2,7 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const puppeteer = require("puppeteer");
 const path = require("path");
-
+require("dotenv").config(); // Load biến từ .env
 const app = express();
 const port = process.env.PORT || 3000;
 
