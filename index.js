@@ -6,6 +6,15 @@ require("dotenv").config(); // Load biến từ .env
 const app = express();
 const port = process.env.PORT || 3000;
 
+const cors = require("cors");
+app.use(
+  cors({
+    origin: ["https://f4sg.online", "http://localhost:3000"],
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
